@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Countdown — T-Minus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0B0F14;
+      --panel: #111820;
+      --grid: rgba(138, 152, 168, 0.08);
+      --line: rgba(138, 152, 168, 0.16);
+      --muted: #8A98A8;
+      --amber: #FFB000;
+      --amber-dim: rgba(255, 176, 0, 0.18);
+      --green: #00FF9C;
+      --red: #FF4136;
+      --paper: #E8EDF2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 42px,
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 42px 100%,
+        var(--bg);
+      color: var(--paper);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    .stage {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 20px;
+    }
+
+    .masthead .label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .masthead .label b {
+      color: var(--amber);
+      font-weight: 600;
+    }
+
+    .status-chip {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 100px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-chip .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .status-chip.running {
+      color: var(--green);
+      border-color: rgba(0, 255, 156, 0.3);
+    }
+
+    .status-chip.running .dot {
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: blink 1s infinite;
+    }
+
+    .status-chip.alarm {
+      color: var(--red);
+      border-color: rgba(255, 65, 54, 0.4);
+    }
+
+    .status-chip.alarm .dot {
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+      animation: blink 0.4s infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 36px 28px 28px;
+      position: relative;
+    }
+
+    /* Dial / ring */
+    .dial-wrap {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      margin: 0 auto 8px;
+    }
+
+    .dial-wrap svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .tick-ring circle {
+      fill: none;
+    }
+
+    .track {
+      stroke: rgba(138, 152, 168, 0.14);
+      stroke-width: 2;
+    }
+
+    .sweep {
+      stroke: var(--amber);
+      stroke-width: 3;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease;
+      filter: drop-shadow(0 0 6px rgba(255, 176, 0, 0.5));
+    }
+
+    .sweep.alarm {
+      stroke: var(--red);
+      filter: drop-shadow(0 0 8px rgba(255, 65, 54, 0.6));
+    }
+
+    .readout {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .digits {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 52px;
+      letter-spacing: 0.03em;
+      color: var(--amber);
+      text-shadow: 0 0 18px rgba(255, 176, 0, 0.35);
+      line-height: 1;
+    }
+
+    .digits.alarm {
+      color: var(--red);
+      text-shadow: 0 0 22px rgba(255, 65, 54, 0.55);
+      animation: pulse 0.6s infinite;
+    }
+
+    @keyframes pulse {
+      50% {
+        opacity: 0.55;
+      }
+    }
+
+    .digits .sep {
+      opacity: 0.6;
+    }
+
+    .sub-readout {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    /* tick marks around dial, generated via JS as small divs positioned absolutely */
+    .ticks {
+      position: absolute;
+      inset: 0;
+    }
+
+    .ticks span {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1px;
+      height: 8px;
+      background: var(--line);
+      transform-origin: 50% 140px;
+    }
+
+    .ticks span.major {
+      height: 12px;
+      background: var(--muted);
+      width: 2px;
+    }
+
+    /* Presets */
+    .presets {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 26px 0 18px;
+    }
+
+    .preset-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      background: transparent;
+      color: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--amber);
+      background: var(--amber-dim);
+    }
+
+    .preset-btn.active {
+      border-color: var(--amber);
+      background: var(--amber-dim);
+      color: var(--amber);
+    }
+
+    .preset-btn:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 2px;
+    }
+
+    /* custom input */
+    .custom-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 26px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .custom-row input {
+      width: 52px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--paper);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 18px;
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .custom-row input:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 1px;
+    }
+
+    .custom-row span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .custom-row label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* controls */
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .ctrl-btn {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      border-radius: 10px;
+      padding: 13px 24px;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--paper);
+      transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease;
+      min-width: 110px;
+    }
+
+    .ctrl-btn:active {
+      transform: scale(0.97);
+    }
+
+    .ctrl-btn:focus-visible {
+      outline: 2px solid var(--amber);
+      outline-offset: 2px;
+    }
+
+    .ctrl-btn.primary {
+      background: var(--amber);
+      color: #1A1200;
+      border-color: var(--amber);
+    }
+
+    .ctrl-btn.primary:hover {
+      opacity: 0.9;
+    }
+
+    .ctrl-btn.stop {
+      border-color: rgba(255, 65, 54, 0.4);
+      color: var(--red);
+    }
+
+    .ctrl-btn.stop:hover {
+      background: rgba(255, 65, 54, 0.1);
+    }
+
+    .ctrl-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .foot-note {
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 20px;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="stage">
+    <div class="masthead">
+      <span class="label"><b>T-MINUS</b> / countdown</span>
+      <span class="status-chip" id="statusChip"><span class="dot"></span><span id="statusText">CodeWithSaadat</span></span>
+    </div>
+
+    <div class="panel">
+      <div class="dial-wrap">
+        <svg viewBox="0 0 280 280">
+          <circle class="track" cx="140" cy="140" r="128"></circle>
+          <circle class="sweep" id="sweep" cx="140" cy="140" r="128" stroke-dasharray="804.2" stroke-dashoffset="0">
+          </circle>
+        </svg>
+        <div class="ticks" id="ticks"></div>
+        <div class="readout">
+          <div class="digits" id="digits">00<span class="sep">:</span>00<span class="sep">:</span>00</div>
+          <div class="sub-readout" id="subReadout">set a duration below</div>
+        </div>
+      </div>
+
+      <div class="presets" id="presets">
+        <button class="preset-btn" data-secs="60">1 min</button>
+        <button class="preset-btn" data-secs="300">5 min</button>
+        <button class="preset-btn" data-secs="600">10 min</button>
+        <button class="preset-btn" data-secs="1500">25 min</button>
+      </div>
+
+      <div class="custom-row">
+        <label>HH <input type="number" id="hIn" min="0" max="99" value="0"></label>
+        <span>:</span>
+        <label>MM <input type="number" id="mIn" min="0" max="59" value="0"></label>
+        <span>:</span>
+        <label>SS <input type="number" id="sIn" min="0" max="59" value="0"></label>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn primary" id="startBtn">Start</button>
+        <button class="ctrl-btn" id="pauseBtn" disabled>Pause</button>
+        <button class="ctrl-btn stop" id="resetBtn">Reset</button>
+      </div>
+      <p>Presented by <a href="https://www.linkedin.com/in/saadat-ali-3021ab3a5" target="_blank">CodeWithSaadat</a></p>
+    </div>
+
+    <p class="foot-note" id="footNote">— configure a duration, then press start —</p>
+  </div>
+
+  <script>
+    const digitsEl = document.getElementById('digits');
+    const subReadout = document.getElementById('subReadout');
+    const sweep = document.getElementById('sweep');
+    const statusChip = document.getElementById('statusChip');
+    const statusText = document.getElementById('statusText');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const hIn = document.getElementById('hIn');
+    const mIn = document.getElementById('mIn');
+    const sIn = document.getElementById('sIn');
+    const presets = document.getElementById('presets');
+    const footNote = document.getElementById('footNote');
+    const ticksWrap = document.getElementById('ticks');
+
+    const RADIUS = 128;
+    const CIRC = 2 * Math.PI * RADIUS;
+    sweep.setAttribute('stroke-dasharray', CIRC.toFixed(1));
+
+    let totalSeconds = 0;   // configured duration
+    let remaining = 0;      // seconds left
+    let interval = null;
+    let running = false;
+    let originalTitle = document.title;
+
+    // Build tick marks around the dial
+    (function buildTicks() {
+      const count = 60;
+      for (let i = 0; i < count; i++) {
+        const tick = document.createElement('span');
+        const angle = (360 / count) * i;
+        const isMajor = i % 5 === 0;
+        if (isMajor) tick.classList.add('major');
+        tick.style.transform = `translate(-50%, -140px) rotate(${angle}deg)`;
+        tick.style.transformOrigin = '50% 140px';
+        ticksWrap.appendChild(tick);
+      }
+    })();
+
+    function fmt(n) { return String(n).padStart(2, '0'); }
+
+    function render() {
+      const h = Math.floor(remaining / 3600);
+      const m = Math.floor((remaining % 3600) / 60);
+      const s = remaining % 60;
+      digitsEl.innerHTML = `${fmt(h)}<span class="sep">:</span>${fmt(m)}<span class="sep">:</span>${fmt(s)}`;
+
+      const frac = totalSeconds > 0 ? remaining / totalSeconds : 0;
+      const offset = CIRC * (1 - frac);
+      sweep.style.strokeDashoffset = offset.toFixed(1);
+
+      document.title = running ? `${fmt(h)}:${fmt(m)}:${fmt(s)} — T-Minus` : originalTitle;
+    }
+
+    function setStatus(state) {
+      statusChip.className = 'status-chip';
+      digitsEl.classList.remove('alarm');
+      sweep.classList.remove('alarm');
+      if (state === 'running') {
+        statusChip.classList.add('running');
+        statusText.textContent = 'counting down';
+      } else if (state === 'paused') {
+        statusText.textContent = 'paused';
+      } else if (state === 'alarm') {
+        statusChip.classList.add('alarm');
+        statusText.textContent = 'time elapsed';
+        digitsEl.classList.add('alarm');
+        sweep.classList.add('alarm');
+      } else {
+        statusText.textContent = 'standby';
+      }
+    }
+
+    function readCustomInputs() {
+      const h = Math.max(0, Math.min(99, parseInt(hIn.value, 10) || 0));
+      const m = Math.max(0, Math.min(59, parseInt(mIn.value, 10) || 0));
+      const s = Math.max(0, Math.min(59, parseInt(sIn.value, 10) || 0));
+      return h * 3600 + m * 60 + s;
+    }
+
+    function clearPresetActive() {
+      [...presets.children].forEach(b => b.classList.remove('active'));
+    }
+
+    presets.addEventListener('click', (e) => {
+      const btn = e.target.closest('.preset-btn');
+      if (!btn || running) return;
+      clearPresetActive();
+      btn.classList.add('active');
+      const secs = parseInt(btn.dataset.secs, 10);
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      hIn.value = h; mIn.value = m; sIn.value = s;
+      totalSeconds = secs;
+      remaining = secs;
+      render();
+      subReadout.textContent = 'ready';
+      footNote.textContent = '— press start to begin —';
+    });
+
+    [hIn, mIn, sIn].forEach(inp => {
+      inp.addEventListener('input', () => {
+        if (running) return;
+        clearPresetActive();
+        const secs = readCustomInputs();
+        totalSeconds = secs;
+        remaining = secs;
+        render();
+        subReadout.textContent = secs > 0 ? 'ready' : 'set a duration below';
+        footNote.textContent = secs > 0 ? '— press start to begin —' : '— configure a duration, then press start —';
+      });
+    });
+
+    function tick() {
+      remaining -= 1;
+      if (remaining <= 0) {
+        remaining = 0;
+        render();
+        finish();
+        return;
+      }
+      render();
+    }
+
+    function finish() {
+      clearInterval(interval);
+      interval = null;
+      running = false;
+      setStatus('alarm');
+      startBtn.disabled = true;
+      pauseBtn.disabled = true;
+      resetBtn.disabled = false;
+      subReadout.textContent = 'complete';
+      footNote.textContent = '— countdown reached zero — press reset to start over —';
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (totalSeconds === 0) {
+        const secs = readCustomInputs();
+        if (secs === 0) {
+          subReadout.textContent = 'set a duration first';
+          return;
+        }
+        totalSeconds = secs;
+        remaining = secs;
+      }
+      if (remaining === 0) remaining = totalSeconds;
+
+      running = true;
+      setStatus('running');
+      startBtn.disabled = true;
+      pauseBtn.disabled = false;
+      resetBtn.disabled = false;
+      hIn.disabled = true; mIn.disabled = true; sIn.disabled = true;
+      subReadout.textContent = 'in progress';
+      footNote.textContent = '— pause or reset at any time —';
+      render();
+
+      clearInterval(interval);
+      interval = setInterval(tick, 1000);
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      if (!running) return;
+      clearInterval(interval);
+      interval = null;
+      running = false;
+      setStatus('paused');
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      subReadout.textContent = 'paused';
+      footNote.textContent = '— press start to resume —';
+    });
+
+    resetBtn.addEventListener('click', () => {
+      clearInterval(interval);
+      interval = null;
+      running = false;
+      remaining = totalSeconds;
+      setStatus('idle');
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      hIn.disabled = false; mIn.disabled = false; sIn.disabled = false;
+      subReadout.textContent = totalSeconds > 0 ? 'ready' : 'set a duration below';
+      footNote.textContent = totalSeconds > 0 ? '— press start to begin —' : '— configure a duration, then press start —';
+      document.title = originalTitle;
+      render();
+    });
+
+    // init
+    render();
+  </script>
+
+</body>
+
+</html>
