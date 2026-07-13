@@ -1,5 +1,5 @@
 # Countdown_Timer_in_HTML
-⏳ Countdown Timer in HTML  A simple and responsive Countdown Timer built using HTML, CSS, and JavaScript. This project displays a live countdown to a specified date and time, updating every second in real time.
+⏳ Countdown Timer in HTML.  A simple and responsive Countdown Timer built using HTML, CSS, and JavaScript. This project displays a live countdown to a specified date and time, updating every second in real time.
 🚀 Features
 ⏳ Live countdown timer
 📅 Custom target date and time
@@ -7,16 +7,17 @@
 📱 Responsive design
 🎨 Clean and modern user interface
 💻 Beginner-friendly source code
-🛠️ Technologies Used
-HTML5
-CSS3
-JavaScript (ES6)
-🎯 How to Use
+
+ ## 🛠️ Technologies Used
+1. HTML5
+2. CSS3
+3. JavaScript (ES6)
+## 🎯 How to Use
 Clone this repository.
 Open the project folder.
 Run index.html in your web browser.
 Modify the target date in script.js to create your own countdown.
-📚 Learning Objectives
+## 📚 Learning Objectives
 
 This project helps beginners understand:
 
@@ -25,17 +26,17 @@ DOM Manipulation
 setInterval() Function
 Event Handling
 Basic Frontend Development
-🤝 Contributing
+## 🤝 Contributing
 
 Contributions, suggestions, and improvements are always welcome.
 
-⭐ Support
+## ⭐ Support
 
 If you found this project helpful, don't forget to Star ⭐ this repository and follow me for more web development projects.
 
-👨‍💻 Author
+# 👨‍💻 Author
 
 Saadat Ali
 Frontend Developer | Web Development | Software Engineering | AI Enthusiast
 
-GitHub: https://github.com/msaadatali677-hub
+# GitHub: https://github.com/msaadatali677-hub
