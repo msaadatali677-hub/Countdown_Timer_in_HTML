@@ -2,7 +2,7 @@
 ⏳ Countdown Timer in HTML.  A simple and responsive Countdown Timer built using HTML, CSS, and JavaScript. This project displays a live countdown to a specified date and time, updating every second in real time.
 
 # 🚀 Features
-⏳ Live countdown timer
+##⏳ Live countdown timer
 📅 Custom target date and time
 ⚡ Real-time updates every second
 📱 Responsive design
