@@ -3,11 +3,11 @@
 
 # 🚀 Features
 ## ⏳ Live countdown timer
-📅 Custom target date and time
-⚡ Real-time updates every second
-📱 Responsive design
-🎨 Clean and modern user interface
-💻 Beginner-friendly source code
+## 📅 Custom target date and time
+## ⚡ Real-time updates every second
+## 📱 Responsive design
+## 🎨 Clean and modern user interface
+## 💻 Beginner-friendly source code
 
  ## 🛠️ Technologies Used
 1. HTML5
